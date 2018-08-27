@@ -10,13 +10,13 @@
 using namespace dlib;
 using namespace std;
 
-int main(int argc, char** argv )
+std::vector<float> getDistances68(std::string left, std::string right)
 {
-    if ( argc != 3 )
-    {
-        printf("usage: <Image_Path1> <Image_Path2>\n");
-        return -1;
-    }
+    std::vector<float> res;
+
+    std::vector<string> image_files;
+    image_files.push_back(left);
+    image_files.push_back(right);
 
     frontal_face_detector detector = get_frontal_face_detector();
     shape_predictor sp;
@@ -25,11 +25,11 @@ int main(int argc, char** argv )
     image_window win, win_faces;
     std::vector<cv::Point2f> obj, scene;
     std::vector<cv::KeyPoint> keypoints_object, keypoints_scene;
-    for (int i = 1; i < argc; ++i) //process two images
+    for (int i = 0; i < image_files.size(); ++i) //process two images
     {
-        cout << "processing image " << argv[i] << endl;
+        cout << "processing image " << image_files[i] << endl;
         array2d<rgb_pixel> img;
-        load_image(img, argv[i]);
+        load_image(img, image_files[i]);
 
         // Now tell the face detector to give us a list of bounding boxes
         // around all the faces in the image.
@@ -82,11 +82,11 @@ int main(int argc, char** argv )
     for (unsigned long i = 0; i < keypoints_object.size(); ++i) {
         good_matches.push_back(cv::DMatch(i, i, 1));
     }
-    
+
     cv::Mat H = findHomography(obj, scene, CV_RANSAC);
 
-    cv::Mat img_object = cv::imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
-    cv::Mat img_scene = cv::imread(argv[2], CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img_object = cv::imread(image_files[0], CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img_scene = cv::imread(image_files[1], CV_LOAD_IMAGE_GRAYSCALE);
 
     cv::Mat img_matches;
     drawMatches(img_object, keypoints_object, img_scene, keypoints_scene,
@@ -95,11 +95,12 @@ int main(int argc, char** argv )
 
     cv::imwrite("res_H.png", img_matches);
 
+
     //--------------------------------------Homography(H) (end)
 
     //--------------------------------------Map left points to right using H and MSE (begin)
     int num_points = 68;
-    float error = 0;
+
     std::vector<cv::Point2f> scene__mapped_points(num_points);
     cv::perspectiveTransform(obj, scene__mapped_points, H);
 
@@ -109,13 +110,39 @@ int main(int argc, char** argv )
         cv::circle(img_scene, p, 1, cv::Scalar(0), 1, 8, 0);
         cv::circle(img_scene, p1, 1, cv::Scalar(255), 1, 8, 0);
         double dist = cv::norm(p - p1);
-        error += pow(dist, 2);
+        res.push_back(dist);
+
     }
-    error = error / num_points;
+
     cv::imwrite("res_right.png", img_scene);
 
     //--------------------------------------Map left points to right using H and MSE (end)
 
+
+    return res;
+}
+
+int main(int argc, char** argv )
+{
+    if ( argc != 3 )
+    {
+        printf("usage: <Image_Path1> <Image_Path2>\n");
+        return -1;
+    }
+
+    std::string left = argv[1];
+    std::string right = argv[2];
+
+    std::vector<float> res = getDistances68(left, right);
+
+
+    float error = 0;
+    for (int i = 0; i < res.size(); ++i) {
+        float dist = res.at(i);
+        cout << dist << endl;
+        error += pow(dist, 2);
+    }
+    error = error / res.size();
     cout << "mse: " << error << endl;
 
     return 0;

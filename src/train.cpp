@@ -25,7 +25,7 @@ int main(int argc, char** argv )
     image_window win, win_faces;
     std::vector<cv::Point2f> obj, scene;
     std::vector<cv::KeyPoint> keypoints_object, keypoints_scene;
-    for (int i = 1; i < argc; ++i)
+    for (int i = 1; i < argc; ++i) //process two images
     {
         cout << "processing image " << argv[i] << endl;
         array2d<rgb_pixel> img;
@@ -77,6 +77,7 @@ int main(int argc, char** argv )
         win_faces.set_image(tile_images(face_chips));
     }
 
+    //--------------------------------------Homography(H) (begin)
     std::vector< cv::DMatch > good_matches;
     for (unsigned long i = 0; i < keypoints_object.size(); ++i) {
         good_matches.push_back(cv::DMatch(i, i, 1));
@@ -92,7 +93,30 @@ int main(int argc, char** argv )
         good_matches, img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
         std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
-    cv::imwrite("res.png", img_matches);
+    cv::imwrite("res_H.png", img_matches);
+
+    //--------------------------------------Homography(H) (end)
+
+    //--------------------------------------Map left points to right using H and MSE (begin)
+    int num_points = 68;
+    float error = 0;
+    std::vector<cv::Point2f> scene__mapped_points(num_points);
+    cv::perspectiveTransform(obj, scene__mapped_points, H);
+
+    for (int i = 0; i < num_points; ++i) {
+        cv::Point2f p = scene[i];
+        cv::Point2f p1 = scene__mapped_points[i];
+        cv::circle(img_scene, p, 1, cv::Scalar(0), 1, 8, 0);
+        cv::circle(img_scene, p1, 1, cv::Scalar(255), 1, 8, 0);
+        double dist = cv::norm(p - p1);
+        error += pow(dist, 2);
+    }
+    error = error / num_points;
+    cv::imwrite("res_right.png", img_scene);
+
+    //--------------------------------------Map left points to right using H and MSE (end)
+
+    cout << "mse: " << error << endl;
 
     return 0;
 }

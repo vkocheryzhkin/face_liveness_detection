@@ -5,4 +5,4 @@ add_subdirectory(dlib)
 
 find_package( OpenCV REQUIRED )
 add_executable( liveness_train src/train.cpp )
-target_link_libraries( liveness_train ${OpenCV_LIBS} dlib)
+target_link_libraries( liveness_train stdc++fs ${OpenCV_LIBS} dlib)

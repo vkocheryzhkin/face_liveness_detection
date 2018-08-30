@@ -99,7 +99,7 @@ std::vector<float> getDistances68(std::string left, std::string right)
         good_matches, img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
         std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
-    //cv::imwrite("res_H.png", img_matches);
+    cv::imwrite("pair.png", img_matches);
 
 
     //--------------------------------------Homography(H) (end)
@@ -119,7 +119,7 @@ std::vector<float> getDistances68(std::string left, std::string right)
         res.push_back(dist);
     }
 
-    //cv::imwrite("res_right.png", img_scene);
+    cv::imwrite("mapped_right.png", img_scene);
     //--------------------------------------Map left points to right using H (end)
 
     return res;
@@ -144,8 +144,6 @@ void processImagesDir(std::string folder)
         std::string name = p.path();
         fileList.push_back(name);
     }
-//        std::cout << p << std::endl;
-
 
     std::vector<pair<int, int>> pairIds;
     std::vector<bool> v(n);
@@ -155,7 +153,6 @@ void processImagesDir(std::string folder)
        std::vector<int> pair;
        for (int i = 0; i < n; ++i) {
            if (v[i]) {
-               //std::cout << (i + 1) << " ";
                pair.push_back(i);
            }
        }
@@ -201,7 +198,6 @@ void performSVM(std::string csvFile)
     while (std::getline(file, line))
       ++number_of_lines;
 
-    //cout << number_of_lines << endl;
     file.close();
 
     int features = 68 + 1;
@@ -226,7 +222,6 @@ void performSVM(std::string csvFile)
             if (j == 68) {
                 int tt = (int)vect.at(j);
                 labels.at<int>(line_num, 0) = tt;
-                //cout << labels.at<int>(line_num, 0) << endl;
             } else{
                 training_mat.at<float>(line_num, j) = vect.at(j);
             }
@@ -238,22 +233,22 @@ void performSVM(std::string csvFile)
 
     cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 
+
     svm->setType(cv::ml::SVM::C_SVC);
-    svm->setKernel(cv::ml::SVM::POLY);
-    svm->setGamma(3); //todo: tune
-    svm->setDegree(3); //todo: tune
+    svm->setKernel(cv::ml::SVM::RBF);
 
     try {
-        svm->train( training_mat , cv::ml::ROW_SAMPLE , labels );
+        //svm->train( training_mat , cv::ml::ROW_SAMPLE , labels );
+        svm->trainAuto(training_mat, cv::ml::ROW_SAMPLE, labels);
+        //cout << svm->getC() << " " << svm->getGamma() << endl;
         svm->save("liveness.svm");
     } catch(cv::Exception& e) {
         cout << e.what() << endl;
     }
-
     return;
 }
 
-void predict(std::string svmFile, std::string left, std::string right) {
+int predict(std::string svmFile, std::string left, std::string right) {
     std::vector<float> res = getDistances68(left, right);
     cv::Mat test_mat(1, 68, CV_32FC1);
     for(int i = 0; i < res.size(); i++) {
@@ -263,9 +258,10 @@ void predict(std::string svmFile, std::string left, std::string right) {
     try {
         cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::load(svmFile);
         float t = svm->predict(test_mat);
-        return t;
+        return (int)t;
     } catch(cv::Exception& e) {
         cout << e.what() << endl;
+        return -1;
     }
 }
 
@@ -285,12 +281,19 @@ int main(int argc, char** argv )
         processImagesDir(dir);
     } else if (type == "train") {
         std::string csvFile = argv[2];
-        performSVM(csvFile);
+        performSVM(csvFile);//train ~/Work/face_liveness_detection_data/combine.csv
     } else { //predict
         std::string svmFile = argv[2];
         std::string left = argv[3];
         std::string right = argv[4];
-        predict(svmFile, left, right);
+        int t = predict(svmFile, left, right);
+        if (t == 0){
+            cout << "live face" << endl; //predict liveness.svm ~/Work/face_liveness_detection_data/live1/0000.png ~/Work/face_liveness_detection_data/live1/0145.png
+        } else if (t == 1){
+            cout << "printed face" << endl; //predict liveness.svm ~/Work/face_liveness_detection_data/fake1/0000.png ~/Work/face_liveness_detection_data/fake1/0220.png
+        } else {
+            cout << "error" << endl;
+        }
     }
 
     return 0;

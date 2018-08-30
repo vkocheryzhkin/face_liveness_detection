@@ -99,7 +99,7 @@ std::vector<float> getDistances68(std::string left, std::string right)
         good_matches, img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
         std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
-    cv::imwrite("pair.png", img_matches);
+//    cv::imwrite("pair.png", img_matches);
 
 
     //--------------------------------------Homography(H) (end)
@@ -119,7 +119,7 @@ std::vector<float> getDistances68(std::string left, std::string right)
         res.push_back(dist);
     }
 
-    cv::imwrite("mapped_right.png", img_scene);
+//    cv::imwrite("mapped_right.png", img_scene);
     //--------------------------------------Map left points to right using H (end)
 
     return res;
@@ -137,7 +137,6 @@ void processImagesDir(std::string folder)
 {
     size_t n = numbeOfFilesInDirectory(folder);
     int r = 2;
-//    cout << t << endl;
 
     std::vector<std::string> fileList;
     for (auto & p : fs::directory_iterator(folder)) {
@@ -233,14 +232,11 @@ void performSVM(std::string csvFile)
 
     cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 
-
     svm->setType(cv::ml::SVM::C_SVC);
     svm->setKernel(cv::ml::SVM::RBF);
 
     try {
-        //svm->train( training_mat , cv::ml::ROW_SAMPLE , labels );
         svm->trainAuto(training_mat, cv::ml::ROW_SAMPLE, labels);
-        //cout << svm->getC() << " " << svm->getGamma() << endl;
         svm->save("liveness.svm");
     } catch(cv::Exception& e) {
         cout << e.what() << endl;

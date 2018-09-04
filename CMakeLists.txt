@@ -4,5 +4,12 @@ project( liveness_train )
 add_subdirectory(dlib)
 
 find_package( OpenCV REQUIRED )
-add_executable( liveness_train src/train.cpp )
-target_link_libraries( liveness_train stdc++fs ${OpenCV_LIBS} dlib)
+
+add_executable( preprocess src/preprocess.cpp src/common.hpp )
+target_link_libraries( preprocess stdc++fs ${OpenCV_LIBS} dlib)
+
+add_executable( train src/train.cpp src/common.hpp)
+target_link_libraries( train stdc++fs ${OpenCV_LIBS} dlib)
+
+add_executable( predict src/predict.cpp src/common.hpp)
+target_link_libraries( predict stdc++fs ${OpenCV_LIBS} dlib)

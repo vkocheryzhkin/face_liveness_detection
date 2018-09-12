@@ -23,18 +23,15 @@ def rotate_image(mat, angle):
   return rotated_mat
   
 def process(input, output, type):
-  # print(args.inputmovie, args.outputdir, args.type)
   detector = dlib.get_frontal_face_detector()
   sp = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
-  # scalexy = 1.0
   frame_skip = 5
-
   vidcap = cv2.VideoCapture(input)
 
   success,image = vidcap.read()
   image = rotate_image(image, -90)
-  # image = cv2.resize(image, (0,0), fx=scalexy, fy=scalexy)
+  image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
   count = 0
   while success:
@@ -47,11 +44,10 @@ def process(input, output, type):
       else:
         print("face not found")
       dlib.save_face_chip(image, shape, image_path, size=150, padding=0.25)
-      # cv2.imwrite(image_path, image)
     success,image = vidcap.read()
     if success:
       image = rotate_image(image, -90)
-      # image = cv2.resize(image, (0,0), fx=scalexy, fy=scalexy) 
+      image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     count += 1
 
 if __name__ == '__main__':

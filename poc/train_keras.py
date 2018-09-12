@@ -23,75 +23,71 @@ im_h = 150
 
 input_shape = (im_w, im_h, 3)
 
-images_dir = "/home/vladimir/Work/face_liveness_detection_data/live1_of/"
-files = [os.path.join(images_dir, name) for name in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, name))]
+def process(live_input_dirs, fraud_input_dir):
+  for images_dir in live_input_dirs:
+    # images_dir = "/home/vladimir/Work/face_liveness_detection_data/live1_of/"
+    files = [os.path.join(images_dir, name) for name in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, name))]
+    for i in tqdm(range(0,len(files))):
+      filename = os.path.join(images_dir, str(i)+".png") #images_dir + str(i)+".png"  
+      img = cv2.imread(filename, cv2.IMREAD_COLOR)
+      images.append(img)
+      labels.append(1)
 
-for i in tqdm(range(0,len(files))):
-  filename = images_dir + str(i)+".png"  
-  img = cv2.imread(filename, cv2.IMREAD_COLOR)
-  images.append(img)
-  labels.append(1)
-
-images_dir = "/home/vladimir/Work/face_liveness_detection_data/fake1_of/"
-files = [os.path.join(images_dir, name) for name in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, name))]
-
-for i in tqdm(range(0,len(files))):
-  filename = images_dir + str(i)+".png"
-  img = cv2.imread(filename, cv2.IMREAD_COLOR)
-  images.append(img)
-  labels.append(0)
-
-
-X = np.array(images, dtype=float)
-y = np.array(labels, dtype=float)
-X /= 255
-y= y.reshape((-1,1))
-X = X.reshape((-1, im_h, im_w, 3))
-# print(y)
-
-print(X.shape)
-from sklearn.preprocessing import OneHotEncoder
-Oneencoder = OneHotEncoder()
-y = Oneencoder.fit_transform(y)
+  for images_dir in fraud_input_dir:
+  # images_dir = "/home/vladimir/Work/face_liveness_detection_data/fake1_of/"
+    files = [os.path.join(images_dir, name) for name in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, name))]
+    for i in tqdm(range(0,len(files))):
+      # filename = images_dir + str(i)+".png"
+      filename = os.path.join(images_dir, str(i)+".png")
+      img = cv2.imread(filename, cv2.IMREAD_COLOR)
+      images.append(img)
+      labels.append(0)
 
 
+  X = np.array(images, dtype=float)
+  y = np.array(labels, dtype=float)
+  X /= 255
+  y= y.reshape((-1,1))
+  X = X.reshape((-1, im_h, im_w, 3))
 
-model = Sequential()
-model.add(Conv2D(32, kernel_size=(3, 3),
+  from sklearn.preprocessing import OneHotEncoder
+  Oneencoder = OneHotEncoder()
+  y = Oneencoder.fit_transform(y)
+
+  model = Sequential()
+  model.add(Conv2D(32, kernel_size=(3, 3),
                  activation='relu',
                  input_shape=input_shape))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(num_classes, activation='softmax'))
+  model.add(Conv2D(64, (3, 3), activation='relu'))
+  model.add(MaxPooling2D(pool_size=(2, 2)))
+  model.add(Dropout(0.25))
+  model.add(Flatten())
+  model.add(Dense(128, activation='relu'))
+  model.add(Dropout(0.5))
+  model.add(Dense(num_classes, activation='softmax'))
 
-model.compile(loss=keras.losses.categorical_crossentropy,
+  model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
-model.fit(X, y,
+  model.fit(X, y,
           batch_size=batch_size,
           epochs=epochs,
           verbose=1,
           validation_split=0.2)
 
 
-# serialize model to YAML
-model_yaml = model.to_yaml()
-with open("model.yaml", "w") as yaml_file:
+  # serialize model to YAML
+  model_yaml = model.to_yaml()
+  with open("model.yaml", "w") as yaml_file:
     yaml_file.write(model_yaml)
-# serialize weights to HDF5
-model.save_weights("model.h5")
-print("Saved model to disk")
-
+  # serialize weights to HDF5
+  model.save_weights("model.h5")
+  print("Saved model to disk")
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Process video')
   parser.add_argument('-l','--live', nargs='+', help='list of live images folders', required=True)
   parser.add_argument('-f','--fraud', nargs='+', help='list of fraud images folders', required=True)
-
   args = parser.parse_args()
-  print(args)
+  process(args.live, args.fraud)

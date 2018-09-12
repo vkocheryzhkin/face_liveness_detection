@@ -6,7 +6,6 @@ import numpy as np
 import argparse
 import dlib
 
-
 import keras
 from keras.datasets import mnist
 from keras.models import Sequential
@@ -15,22 +14,8 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
 from keras.models import model_from_yaml
 
-
-
-
 im_w = 150
 im_h = 150
-
-# # live_file = "/home/vladimir/Work/face_liveness_detection_data/live1_of/100.png"
-# # live_file = "/home/vladimir/Work/face_liveness_detection_data/fake1_of/200.png"
-# img = cv2.imread(live_file, cv2.IMREAD_COLOR)
-
-# X = np.array([img], dtype=float)
-# X /= 255
-# sample = X.reshape((-1, im_h, im_w, 3))
-
-# classes = loaded_model.predict(sample)
-# print(classes)
 
 def get_flow(left, right):
   frame1 = cv.imread(left)

@@ -3,6 +3,7 @@ import os
 from tqdm import tqdm
 import cv2
 import numpy as np 
+import argparse
 
 import keras
 from keras.datasets import mnist
@@ -15,9 +16,6 @@ batch_size = 32
 num_classes = 2
 epochs = 2
 
-# input image dimensions
-# img_rows, img_cols = 150, 150
-
 images = []
 labels = []
 im_w = 150
@@ -27,12 +25,10 @@ input_shape = (im_w, im_h, 3)
 
 images_dir = "/home/vladimir/Work/face_liveness_detection_data/live1_of/"
 files = [os.path.join(images_dir, name) for name in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, name))]
-# print(files)
+
 for i in tqdm(range(0,len(files))):
-  filename = images_dir + str(i)+".png"
-  # print(filename)
+  filename = images_dir + str(i)+".png"  
   img = cv2.imread(filename, cv2.IMREAD_COLOR)
-  # print(img.shape)
   images.append(img)
   labels.append(1)
 
@@ -41,15 +37,11 @@ files = [os.path.join(images_dir, name) for name in os.listdir(images_dir) if os
 
 for i in tqdm(range(0,len(files))):
   filename = images_dir + str(i)+".png"
-  # print(filename)
   img = cv2.imread(filename, cv2.IMREAD_COLOR)
-  # print(img.shape)
   images.append(img)
   labels.append(0)
 
-# for i in images:
-	# print("{} shape {}".format(1, i.shape))
-# print(len(images))
+
 X = np.array(images, dtype=float)
 y = np.array(labels, dtype=float)
 X /= 255
@@ -94,11 +86,12 @@ with open("model.yaml", "w") as yaml_file:
 # serialize weights to HDF5
 model.save_weights("model.h5")
 print("Saved model to disk")
-# score = model.evaluate(x_test, y_test, verbose=0)
-# print('Test loss:', score[0])
-# print('Test accuracy:', score[1])
 
 
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description = 'Process video')
+  parser.add_argument('-l','--live', nargs='+', help='list of live images folders', required=True)
+  parser.add_argument('-f','--fraud', nargs='+', help='list of fraud images folders', required=True)
 
-# hist = model.fit(x, y, validation_split=0.2)
-# print(hist.history)
+  args = parser.parse_args()
+  print(args)

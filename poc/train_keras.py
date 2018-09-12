@@ -76,7 +76,6 @@ def process(live_input_dirs, fraud_input_dir):
           verbose=1,
           validation_split=0.2)
 
-
   # serialize model to YAML
   model_yaml = model.to_yaml()
   with open("model.yaml", "w") as yaml_file:

@@ -2,7 +2,7 @@
 
 ### Download 
 
-shape_predictor_68_face_landmarks.dat
+shape_predictor_68_face_landmarks.dat from http://dlib.net/files
 
 ### Train:
 

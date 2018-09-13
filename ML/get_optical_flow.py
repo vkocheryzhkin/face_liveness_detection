@@ -7,7 +7,7 @@ from cv_common import get_flow
 
 #todo: we need only gray imges to calculate flow
 
-def process(inputdir, output, type):
+def process(inputdir, output):
   files = [os.path.join(inputdir, name) for name in os.listdir(inputdir) if os.path.isfile(os.path.join(inputdir, name))]
   ids = list(range(0, len(files)))
   count = 0
@@ -24,13 +24,10 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Process frames')
   parser.add_argument('-i', '--inputdir', help="Specify the input frames folder")
   parser.add_argument('-o', '--outputdir', help="Specify the output folder")
-  parser.add_argument('--fraud', dest='type', action='store_false')
-  parser.add_argument('--live', dest='type', action='store_true')
-  parser.set_defaults(type=True)
   args = parser.parse_args()
   if not args.inputdir:
     parser.error('Please specify an input frames folder')
   if not args.outputdir:
     parser.error('Please specify an output folder')
   
-  process(args.inputdir, args.outputdir, args.type)
+  process(args.inputdir, args.outputdir)

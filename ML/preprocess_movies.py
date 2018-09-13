@@ -7,7 +7,7 @@ from cv_common import rotate_image
 
 FACE_SIZE = 150
 
-def process(input, output, type, frame_skip):
+def process(input, output, frame_skip):
   detector = dlib.get_frontal_face_detector()
   sp = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
@@ -38,14 +38,11 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Process video')
   parser.add_argument('-i', '--inputmovie', help="Specify the input movie")
   parser.add_argument('-o', '--outputdir', help="Specify the output directory")
-  parser.add_argument("-s", '--skipframes', help="skip frames", default=2, type=int)
-  parser.add_argument('--fraud', dest='type', action='store_false')
-  parser.add_argument('--live', dest='type', action='store_true')
-  parser.set_defaults(type=True)
+  parser.add_argument("-s", '--skipframes', help="skip frames", default=5, type=int)
   args = parser.parse_args()
   if not args.inputmovie:
     parser.error('Please specify an input movie')
   if not args.outputdir:
     parser.error('Please specify an output directory')
   
-  process(args.inputmovie, args.outputdir, args.type, args.skipframes)
+  process(args.inputmovie, args.outputdir, args.skipframes)

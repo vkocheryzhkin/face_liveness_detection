@@ -5,6 +5,7 @@ import cv2 as cv
 import numpy as np
 import argparse
 import dlib
+from cv_common import get_flow
 
 import keras
 from keras.datasets import mnist
@@ -16,22 +17,6 @@ from keras.models import model_from_yaml
 
 im_w = 150
 im_h = 150
-
-def get_flow(left, right):
-  frame1 = cv.imread(left)
-  frame2 = cv.imread(right)
-
-  prvs = cv.cvtColor(frame1, cv.COLOR_BGR2GRAY)
-  hsv = np.zeros_like(frame1)
-  hsv[...,1] = 255
-
-  next = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
-  flow = cv.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-  mag, ang = cv.cartToPolar(flow[...,0], flow[...,1])
-  hsv[...,0] = ang * 180 / np.pi / 2
-  hsv[...,2] = cv.normalize(mag, None, 0, 255, cv.NORM_MINMAX)
-
-  return hsv
 
 def process(left, right):
   detector = dlib.get_frontal_face_detector()
@@ -83,7 +68,6 @@ def process(left, right):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Process video')
   parser.add_argument('-l', '--leftimage', help="Specify left image")
-  parser.add_argument('-r','--rightimage', help="Specify right image")
-  # parser.add_argument('-i','--input_of_image', help="Specify right image")
+  parser.add_argument('-r','--rightimage', help="Specify right image")  
   args = parser.parse_args()
   process(args.leftimage, args.rightimage)

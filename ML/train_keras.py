@@ -25,19 +25,16 @@ input_shape = (im_w, im_h, 3)
 
 def process(live_input_dirs, fraud_input_dir):
   for images_dir in live_input_dirs:
-    # images_dir = "/home/vladimir/Work/face_liveness_detection_data/live1_of/"
     files = [os.path.join(images_dir, name) for name in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, name))]
     for i in tqdm(range(0,len(files))):
-      filename = os.path.join(images_dir, str(i)+".png") #images_dir + str(i)+".png"  
+      filename = os.path.join(images_dir, str(i)+".png")
       img = cv2.imread(filename, cv2.IMREAD_COLOR)
       images.append(img)
       labels.append(1)
 
   for images_dir in fraud_input_dir:
-  # images_dir = "/home/vladimir/Work/face_liveness_detection_data/fake1_of/"
     files = [os.path.join(images_dir, name) for name in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, name))]
     for i in tqdm(range(0,len(files))):
-      # filename = images_dir + str(i)+".png"
       filename = os.path.join(images_dir, str(i)+".png")
       img = cv2.imread(filename, cv2.IMREAD_COLOR)
       images.append(img)
@@ -80,13 +77,14 @@ def process(live_input_dirs, fraud_input_dir):
   model_yaml = model.to_yaml()
   with open("model.yaml", "w") as yaml_file:
     yaml_file.write(model_yaml)
+
   # serialize weights to HDF5
   model.save_weights("model.h5")
   print("Saved model to disk")
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Process video')
-  parser.add_argument('-l','--live', nargs='+', help='list of live images folders', required=True)
-  parser.add_argument('-f','--fraud', nargs='+', help='list of fraud images folders', required=True)
+  parser.add_argument('-l','--live', nargs='+', help='list of live optical flow images folders', required=True)
+  parser.add_argument('-f','--fraud', nargs='+', help='list of fraud ioptical flow mages folders', required=True)
   args = parser.parse_args()
   process(args.live, args.fraud)

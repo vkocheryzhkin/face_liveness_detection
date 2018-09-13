@@ -1,19 +1,21 @@
-import cv2
+import cv2 as cv
 import numpy as np
 import math
 import argparse
 import dlib
-from cv_common import rotate_image 
+from cv_common import rotate_image
+
+FACE_SIZE = 150
 
 def process(input, output, type, frame_skip):
   detector = dlib.get_frontal_face_detector()
   sp = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
-  vidcap = cv2.VideoCapture(input)
+  vidcap = cv.VideoCapture(input)
 
   success,image = vidcap.read()
   image = rotate_image(image, -90)
-  image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+  image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
   count = 0
   while success:
@@ -25,11 +27,11 @@ def process(input, output, type, frame_skip):
         shape = sp(image, d)
       else:
         print("face not found")
-      dlib.save_face_chip(image, shape, image_path, size=150, padding=0.25)
+      dlib.save_face_chip(image, shape, image_path, size=FACE_SIZE, padding=0.25)
     success,image = vidcap.read()
     if success:
       image = rotate_image(image, -90)
-      image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+      image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
     count += 1
 
 if __name__ == '__main__':
